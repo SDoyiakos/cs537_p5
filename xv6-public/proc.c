@@ -532,3 +532,7 @@ procdump(void)
     cprintf("\n");
   }
 }
+
+int wmap(uint addr, int length, int flags, int fd) {
+	return 0;
+}

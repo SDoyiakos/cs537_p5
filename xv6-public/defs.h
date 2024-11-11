@@ -1,3 +1,5 @@
+#include "types.h"
+
 struct buf;
 struct context;
 struct file;
@@ -120,6 +122,7 @@ void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
 void            yield(void);
+int 			wmap(uint addr, int length, int flags, int fd);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
@@ -150,10 +153,12 @@ char*           strncpy(char*, const char*, int);
 
 // syscall.c
 int             argint(int, int*);
+int		    	arguint(int, uint*);
 int             argptr(int, char**, int);
 int             argstr(int, char**);
 int             fetchint(uint, int*);
 int             fetchstr(uint, char**);
+uint fetchuint(uint, uint*);
 void            syscall(void);
 
 // timer.c
