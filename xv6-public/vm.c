@@ -6,6 +6,7 @@
 #include "mmu.h"
 #include "proc.h"
 #include "elf.h"
+#include "wmap.h"
 
 extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
@@ -384,6 +385,78 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
   }
   return 0;
 }
+
+uint wmap(uint addr, int length, int flags, int fd) {
+	struct proc* p = myproc();
+	ProcMapping* m;
+	
+	// Can't add anymore mappings
+	if(p->mapping_count == 16) {
+		return FAILED;
+	}
+
+	// Search for open mapping
+	for(int i = 0; i < 16;i++) {
+		m = &p->mappings[i];
+		if(m->inuse == 0) { // Found free entry
+			break;
+		}
+	}
+
+	// We're only implementing fixed mappings
+	if((flags & MAP_FIXED) != MAP_FIXED) {
+		return FAILED;
+	}
+
+	// We're only considering shared mappings
+	if((flags & MAP_SHARED) != MAP_SHARED) {
+		return FAILED;
+	}
+
+	switch(flags) {
+		case (MAP_SHARED|MAP_ANONYMOUS|MAP_FIXED):
+		
+			// Check within bounds 
+			if(addr < LOWER_BOUND || addr > UPPER_BOUND) {
+				return FAILED;
+			}
+			
+			// Check for page aligned
+			if(addr % PGSIZE != 0) {
+				return FAILED;
+			}
+			
+			int page_count = length/PGSIZE;
+			if(addr + (page_count * PGSIZE) > UPPER_BOUND) {
+				return FAILED;
+			}
+
+			// Allocate up front
+			void* va = (void*)(addr);
+			char* mem;
+			for(int i = 0;i < page_count;i++) {
+				
+				mem = kalloc();
+				if(mem == 0) {
+					return FAILED;
+				}
+				if(mappages(p->pgdir, va, PGSIZE, V2P(mem), PTE_W|PTE_U) < 0) {
+					kfree(mem);
+					return FAILED;
+				}
+				va += PGSIZE;
+			}
+			// Add to mapping structure
+			//p->mapping_count++;
+		//	m->inuse = 1;
+		//	m->addr = addr;
+		//	m->length = length;
+	
+
+	}
+	return addr;
+}
+
 
 //PAGEBREAK!
 // Blank page.

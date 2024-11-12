@@ -91,5 +91,39 @@ sys_uptime(void)
 }
 
 int sys_wmap(void) {
+	uint addr;
+	int length;
+	int flags;
+	int fd;
+
+	/* Checking if params are good */
+	if(arguint(0, &addr) == -1) {
+		return -1;
+	}
+	if(argint(1, &length) == -1) {
+		return -1;
+	}
+	if(argint(2, &flags) == -1) {
+		return -1;
+	}
+	if(argint(3, &fd) == -1) {
+		return -1;
+	}
+
+	if(length <= 0) {
+		return -1;
+	}
+	return wmap(addr, length, flags, fd);
+}
+
+int sys_wunmap(void) {
+	return 0;
+}
+
+int sys_va2pa(void) {
+	return 0;
+}
+
+int sys_getwmapinfo(void) {
 	return 0;
 }
