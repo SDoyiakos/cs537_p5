@@ -97,7 +97,7 @@ int sys_wmap(void) {
 	int fd;
 
 	/* Checking if params are good */
-	if(arguint(0, &addr) == -1) {
+	if(argint(0, (int*)&addr) == -1) {
 		return -1;
 	}
 	if(argint(1, &length) == -1) {

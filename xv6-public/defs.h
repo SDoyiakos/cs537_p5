@@ -152,12 +152,10 @@ char*           strncpy(char*, const char*, int);
 
 // syscall.c
 int             argint(int, int*);
-uint		    	arguint(int, uint*);
 int             argptr(int, char**, int);
 int             argstr(int, char**);
 int             fetchint(uint, int*);
 int             fetchstr(uint, char**);
-int             fetchuint(uint, uint*);
 void            syscall(void);
 
 // timer.c
