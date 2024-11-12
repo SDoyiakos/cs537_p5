@@ -6,7 +6,6 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
-#include "memorymapping.h"
 
 struct {
   struct spinlock lock;
@@ -534,6 +533,4 @@ procdump(void)
   }
 }
 
-int wmap(uint addr, int length, int flags, int fd) {
-	return 0;
-}
+

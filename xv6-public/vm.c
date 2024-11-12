@@ -385,6 +385,73 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
   return 0;
 }
 
+void initMappings(void) {
+	struct proc* p = myproc();
+	p->mappings.total_mmaps = 0;
+	for(int i = 0;i < 16;i++) {
+		p->mappings.addr[i] = -1;
+	}
+}
+
+int wmap(uint addr, int length, int flags, int fd) {
+	struct wmapinfo* mappings = &myproc()->mappings;
+
+	// Can't add anymore mappings
+	if(mappings->total_mmaps == MAX_WMMAP_INFO) {
+		return FAILED;
+	}
+
+	// We're only implementing fixed mappings
+	if((flags & MAP_FIXED) != MAP_FIXED) {
+		return FAILED;
+	}
+
+	// We're only considering shared mappings
+	if((flags & MAP_SHARED) != MAP_SHARED) {
+		return FAILED;
+	}
+
+	switch(flags) {
+		case (MAP_SHARED|MAP_ANONYMOUS|MAP_FIXED):
+		
+			// Check within bounds 
+			if(addr < LOWER_BOUND || addr > UPPER_BOUND) {
+				return FAILED;
+			}
+			
+			// Check for page aligned
+			if(addr % PGSIZE != 0) {
+				return FAILED;
+			}
+			
+			int page_count = length/PGSIZE;
+			if(addr + (page_count * PGSIZE) > UPPER_BOUND) {
+				return FAILED;
+			}
+
+			// Allocate up front
+			int va = addr;
+			char* mem;
+			for(int i = 0;i < page_count;i++) {
+				mem = kalloc();
+				mappages(myproc()->pgdir, &va, PGSIZE, V2P(mem), PTE_W| PTE_U);
+				va += PGSIZE;
+			}
+
+			// Add to mapping structure
+			mappings->total_mmaps++;
+			for(int i = 0; i < MAX_WMMAP_INFO; i++) {
+				if(mappings->addr[i] == -1) {
+					mappings->addr[i] = addr;
+					mappings->length[i] = length;
+					mappings->n_loaded_pages[i] = page_count;
+				}
+			}
+	}
+	return addr;
+}
+
+
 //PAGEBREAK!
 // Blank page.
 //PAGEBREAK!
