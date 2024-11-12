@@ -112,6 +112,11 @@ found:
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
 
+  // Init mappings
+  p->mapping_count = 0;
+  for(int i = 0;i < 16;i++) {
+	p->mappings[i].inuse = 0;
+  }
   return p;
 }
 

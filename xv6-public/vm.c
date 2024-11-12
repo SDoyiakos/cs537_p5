@@ -386,15 +386,7 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
   return 0;
 }
 
-void initMappings(void) {
-	struct proc* p = myproc();
-	p->mapping_count = 0;
-	for(int i = 0;i < 16;i++) {
-		p->mappings[i].inuse = 0;
-	}
-}
-
-int wmap(uint addr, int length, int flags, int fd) {
+uint wmap(uint addr, int length, int flags, int fd) {
 	struct proc* p = myproc();
 	ProcMapping* m;
 	
