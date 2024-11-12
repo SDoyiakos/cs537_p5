@@ -388,7 +388,6 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 
 uint wmap(uint addr, int length, int flags, int fd) {
 	struct proc* p = myproc();
-	cprintf("PROC NAME: %s\n", p->name);
 	ProcMapping* m;
 	
 	// Can't add anymore mappings
@@ -433,22 +432,25 @@ uint wmap(uint addr, int length, int flags, int fd) {
 			}
 
 			// Allocate up front
-			int va = addr;
+			void* va = (void*)(addr);
 			char* mem;
 			for(int i = 0;i < page_count;i++) {
 				
 				mem = kalloc();
-				mappages(p->pgdir, &va, PGSIZE, V2P(mem), PTE_W|PTE_U);
-				cprintf("Allocating page %i\n", page_count);
+				if(mem == 0) {
+					return FAILED;
+				}
+				if(mappages(p->pgdir, va, PGSIZE, V2P(mem), PTE_W|PTE_U) < 0) {
+					kfree(mem);
+					return FAILED;
+				}
 				va += PGSIZE;
 			}
-			
-
 			// Add to mapping structure
-			p->mapping_count++;
-			m->inuse = 1;
-			m->addr = addr;
-			m->length = length;
+			//p->mapping_count++;
+		//	m->inuse = 1;
+		//	m->addr = addr;
+		//	m->length = length;
 	
 
 	}
