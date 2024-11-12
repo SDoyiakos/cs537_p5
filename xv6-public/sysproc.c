@@ -113,6 +113,17 @@ int sys_wmap(void) {
 	if(length <= 0) {
 		return -1;
 	}
-
 	return wmap(addr, length, flags, fd);
+}
+
+int sys_wunmap(void) {
+	return 0;
+}
+
+int sys_va2pa(void) {
+	return 0;
+}
+
+int sys_getwmapinfo(void) {
+	return 0;
 }
