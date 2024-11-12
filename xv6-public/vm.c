@@ -386,6 +386,12 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
   return 0;
 }
 
+int wunmap(unint addr){
+
+	return 0;
+
+}
+
 uint wmap(uint addr, int length, int flags, int fd) {
 	struct proc* p = myproc();
 	ProcMapping* m;
