@@ -4,8 +4,11 @@
 
 int main(void) {
 	int ret_val;
-	ret_val = wmap(0x7000C000, 4096, MAP_FIXED|MAP_SHARED|MAP_ANONYMOUS,0);
-
+	uint addr = 0x7000C000;
+	ret_val = wmap(addr, 4096, MAP_FIXED|MAP_SHARED|MAP_ANONYMOUS,0);
+	
+//	int ret_val_unmap;
+//	ret_val_unmap = wunmap(addr);
 	printf(1, "Return Value is %d\n", ret_val);
 	exit();
 }

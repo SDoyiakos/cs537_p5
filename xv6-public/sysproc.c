@@ -117,8 +117,8 @@ int sys_wmap(void) {
 }
 
 int sys_wunmap(void) {
-	uint addr;
-	if(arguint(0, &addr) == -1) {
+	int addr;
+	if(argint(0, &addr) == -1) {
 		return -1;
 	}
 	return wunmap(addr);

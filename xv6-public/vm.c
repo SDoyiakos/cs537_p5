@@ -386,7 +386,7 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
   return 0;
 }
 
-int wunmap(unint addr){
+int wunmap(uint addr){
 
 	return 0;
 
