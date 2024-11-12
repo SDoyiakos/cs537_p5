@@ -6,6 +6,7 @@
 #include "mmu.h"
 #include "proc.h"
 #include "elf.h"
+#include "wmap.h"
 
 extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
@@ -387,18 +388,27 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 
 void initMappings(void) {
 	struct proc* p = myproc();
-	p->mappings.total_mmaps = 0;
+	p->mapping_count = 0;
 	for(int i = 0;i < 16;i++) {
-		p->mappings.addr[i] = -1;
+		p->mappings[i].inuse = 0;
 	}
 }
 
 int wmap(uint addr, int length, int flags, int fd) {
-	struct wmapinfo* mappings = &myproc()->mappings;
-
+	struct proc* p = myproc();
+	ProcMapping* m;
+	
 	// Can't add anymore mappings
-	if(mappings->total_mmaps == MAX_WMMAP_INFO) {
+	if(p->mapping_count == 16) {
 		return FAILED;
+	}
+
+	// Search for open mapping
+	for(int i = 0; i < 16;i++) {
+		m = &p->mappings[i];
+		if(m->inuse == 0) { // Found free entry
+			break;
+		}
 	}
 
 	// We're only implementing fixed mappings
@@ -434,19 +444,17 @@ int wmap(uint addr, int length, int flags, int fd) {
 			char* mem;
 			for(int i = 0;i < page_count;i++) {
 				mem = kalloc();
-				mappages(myproc()->pgdir, &va, PGSIZE, V2P(mem), PTE_W| PTE_U);
+				mappages(p->pgdir, &va, PGSIZE, V2P(mem), PTE_W| PTE_U);
 				va += PGSIZE;
 			}
 
 			// Add to mapping structure
-			mappings->total_mmaps++;
-			for(int i = 0; i < MAX_WMMAP_INFO; i++) {
-				if(mappings->addr[i] == -1) {
-					mappings->addr[i] = addr;
-					mappings->length[i] = length;
-					mappings->n_loaded_pages[i] = page_count;
-				}
-			}
+			p->mapping_count++;
+			m->inuse = 1;
+			m->addr = addr;
+			m->length = length;
+	
+
 	}
 	return addr;
 }
