@@ -386,8 +386,32 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
   return 0;
 }
 
+//wunmap removes the mapping starting at addr from the process virtual address space.
+// If it's a file-backed mapping with MAP_SHARED, it writes the memory data back to the file to ensure the file remains up-to-da
+//te. So, wunmap does not partially unmap any mmap.
 int wunmap(uint addr){
 
+	// check if the mapping exits
+	struct proc* p = myproc();
+	ProcMapping* m = 0;
+	
+	for(int i = 0; i < 16;i++) {
+		if((p->mappings[i]).addr == addr) { // Found free entry
+			m = &p->mappings[i];
+			break;
+		}
+	}
+	
+	if(m == 0){
+		return -1;	
+	}
+	// check if it has been updated
+	
+	// if it is updated
+	
+		// if it is file backed, write memory back to disk
+
+	//if it is not updated, simply free mem.
 	return 0;
 
 }
@@ -453,11 +477,11 @@ uint wmap(uint addr, int length, int flags, int fd) {
 				va += PGSIZE;
 			}
 			// Add to mapping structure
-			//p->mapping_count++;
-		//	m->inuse = 1;
-		//	m->addr = addr;
-		//	m->length = length;
-	
+		p->mapping_count++;
+		m->inuse = 1;
+		m->addr = addr;
+		m->length = length;
+		
 
 	}
 	return addr;
