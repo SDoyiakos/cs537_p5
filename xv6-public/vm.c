@@ -42,7 +42,8 @@ walkpgdir(pde_t *pgdir, const void *va, int alloc)
   pde = &pgdir[PDX(va)];
   if(*pde & PTE_P){
     pgtab = (pte_t*)P2V(PTE_ADDR(*pde));
-  } else {
+  } 
+  else {
     if(!alloc || (pgtab = (pte_t*)kalloc()) == 0)
       return 0;
     // Make sure all those PTE_P bits are zero.
@@ -387,8 +388,11 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 }
 
 uint wmap(uint addr, int length, int flags, int fd) {
-	struct proc* p = myproc();
-	ProcMapping* m;
+	struct proc* p = myproc(); // The current process
+	ProcMapping* m; // The mapping entry of the current proc
+	pte_t* my_pte;
+	void* va;
+	int page_count;
 	
 	// Can't add anymore mappings
 	if(p->mapping_count == 16) {
@@ -413,46 +417,60 @@ uint wmap(uint addr, int length, int flags, int fd) {
 		return FAILED;
 	}
 
+	// Check within bounds 
+	if(addr < LOWER_BOUND || addr > UPPER_BOUND) {
+		return FAILED;
+	}
+	
+	// Check for page aligned
+	if(addr % PGSIZE != 0) {
+		return FAILED;
+	}
+	
+	
+
+	// Check requested upper bound is within bounds
+	if(addr + length > UPPER_BOUND) {
+		return FAILED;
+	}
+			
+	
 	switch(flags) {
-		case (MAP_SHARED|MAP_ANONYMOUS|MAP_FIXED):
+		case (MAP_SHARED|MAP_ANONYMOUS|MAP_FIXED): // Mapping without file backing
 		
-			// Check within bounds 
-			if(addr < LOWER_BOUND || addr > UPPER_BOUND) {
-				return FAILED;
-			}
-			
-			// Check for page aligned
-			if(addr % PGSIZE != 0) {
-				return FAILED;
-			}
-			
-			int page_count = length/PGSIZE;
-			if(addr + (page_count * PGSIZE) > UPPER_BOUND) {
-				return FAILED;
+			va = (void*)(addr);
+			page_count = length/PGSIZE;
+
+			// Checking each PTE we want to see if its being used
+			for(int i = 0;i < page_count;i++) {
+				my_pte = walkpgdir(p->pgdir, va + (i * PGSIZE), 0); // Retrieve pte
+				if(my_pte != 0 && (*my_pte & PTE_P)) { // Dont map if mapped already
+					return FAILED;
+				}
 			}
 
 			// Allocate up front
-			void* va = (void*)(addr);
 			char* mem;
 			for(int i = 0;i < page_count;i++) {
-				
+
+				// Allocate region in mem
 				mem = kalloc();
 				if(mem == 0) {
 					return FAILED;
 				}
-				if(mappages(p->pgdir, va, PGSIZE, V2P(mem), PTE_W|PTE_U) < 0) {
+
+				// Map the pte to the memory
+				if(mappages(p->pgdir, va + (i * PGSIZE), PGSIZE, V2P(mem), PTE_W|PTE_U) < 0) {
 					kfree(mem);
 					return FAILED;
 				}
-				va += PGSIZE;
 			}
-			// Add to mapping structure
-			//p->mapping_count++;
-		//	m->inuse = 1;
-		//	m->addr = addr;
-		//	m->length = length;
-	
-
+			
+		// Add to mapping structure
+		p->mapping_count++;
+		m->inuse = 1;
+		m->addr = addr;
+		m->length = length;
 	}
 	return addr;
 }
@@ -464,4 +482,5 @@ uint wmap(uint addr, int length, int flags, int fd) {
 // Blank page.
 //PAGEBREAK!
 // Blank page.
+
 
