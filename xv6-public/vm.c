@@ -197,24 +197,37 @@ inituvm(pde_t *pgdir, char *init, uint sz)
 // Load a program segment into pgdir.  addr must be page-aligned
 // and the pages from addr to addr+sz must already be mapped.
 int
-loaduvm(pde_t *pgdir, char *addr, struct inode *ip, uint offset, uint sz)
+loaduvm(pde_t *pgdir, char *addr, struct inode *ip, uint offset, uint sz, uint elf_flags)
 {
   uint i, pa, n;
   pte_t *pte;
+  elf_flags = elf_flags & 0x2; // Mask elf flags on write perm
 
-  if((uint) addr % PGSIZE != 0)
+  
+  if((uint) addr % PGSIZE != 0) // Check that the starting addr is page aligned
     panic("loaduvm: addr must be page aligned");
-  for(i = 0; i < sz; i += PGSIZE){
-    if((pte = walkpgdir(pgdir, addr+i, 0)) == 0)
+  for(i = 0; i < sz; i += PGSIZE){ // Iterate over every page that needs to be loaded
+    if((pte = walkpgdir(pgdir, addr+i, 0)) == 0) // Retrieve the pte for the given va
       panic("loaduvm: address should exist");
-    pa = PTE_ADDR(*pte);
-    if(sz - i < PGSIZE)
+    pa = PTE_ADDR(*pte); 
+    
+
+	
+    
+    if(sz - i < PGSIZE) // Only load remaining bytes if under a page
       n = sz - i;
-    else
+    else // Load whole page if still need to read >= a page
       n = PGSIZE;
-    if(readi(ip, P2V(pa), offset+i, n) != n)
+    if(readi(ip, P2V(pa), offset+i, n) != n) {
       return -1;
+	}
+	
+	// Setting permission bits
+    *pte = *pte - 2;
+    *pte = *pte | elf_flags;
+
   }
+  
   return 0;
 }
 
