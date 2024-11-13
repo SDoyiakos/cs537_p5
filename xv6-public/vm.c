@@ -415,12 +415,12 @@ int wunmap(uint addr){
 		pte_t *pte = walkpgdir(p->pgdir, va, 0);
 		uint physical_address = PTE_ADDR(*pte);
 		kfree(P2V(physical_address));
+		*pte = 0;
 		va += PGSIZE;
 	}
 
 	// update meta data
 	m->inuse = 0;	
-	//assume it hasn't been updated and is not file backed. 
 		
 	return 0;
 
