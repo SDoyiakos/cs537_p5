@@ -401,17 +401,27 @@ int wunmap(uint addr){
 			break;
 		}
 	}
-	
-	if(m == 0){
+
+	// what does inuse do? When would it not be set to 1?	
+	if((m == 0) | (m->inuse != 1)){
 		return -1;	
 	}
-	// check if it has been updated
-	
-	// if it is updated
-	
-		// if it is file backed, write memory back to disk
 
-	//if it is not updated, simply free mem.
+	void* end = (void*)(addr + m->length);
+	void* va = (void*)(addr);	
+
+	while(va < end){
+		
+		pte_t *pte = walkpgdir(p->pgdir, va, 0);
+		uint physical_address = PTE_ADDR(*pte);
+		kfree(P2V(physical_address));
+		va += PGSIZE;
+	}
+
+	// update meta data
+	m->inuse = 0;	
+	//assume it hasn't been updated and is not file backed. 
+		
 	return 0;
 
 }
