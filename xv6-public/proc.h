@@ -36,11 +36,11 @@ struct context {
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
-typedef struct {
+struct ProcMapping {
 	uint addr;
 	int length;
 	int inuse;
-} ProcMapping;
+};
 
 // Per-process state
 struct proc {
@@ -57,7 +57,7 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
-  ProcMapping mappings[16];
+  struct ProcMapping mappings[16];
   int mapping_count;
 };
 

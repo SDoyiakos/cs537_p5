@@ -59,7 +59,7 @@ walkpgdir(pde_t *pgdir, const void *va, int alloc)
 // Create PTEs for virtual addresses starting at va that refer to
 // physical addresses starting at pa. va and size might not
 // be page-aligned.
-static int
+int
 mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
 {
   char *a, *last;
@@ -402,7 +402,7 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 
 uint wmap(uint addr, int length, int flags, int fd) {
 	struct proc* p = myproc(); // The current process
-	ProcMapping* m; // The mapping entry of the current proc
+	struct ProcMapping* m; // The mapping entry of the current proc
 	pte_t* my_pte;
 	void* va;
 	int page_count;
@@ -439,15 +439,12 @@ uint wmap(uint addr, int length, int flags, int fd) {
 	if(addr % PGSIZE != 0) {
 		return FAILED;
 	}
-	
-	
 
 	// Check requested upper bound is within bounds
 	if(addr + length > UPPER_BOUND) {
 		return FAILED;
 	}
-			
-	
+				
 	switch(flags) {
 		case (MAP_SHARED|MAP_ANONYMOUS|MAP_FIXED): // Mapping without file backing
 		
@@ -460,30 +457,17 @@ uint wmap(uint addr, int length, int flags, int fd) {
 				if(my_pte != 0 && (*my_pte & PTE_P)) { // Dont map if mapped already
 					return FAILED;
 				}
-			}
-
-			// Allocate up front
-			char* mem;
-			for(int i = 0;i < page_count;i++) {
-
-				// Allocate region in mem
-				mem = kalloc();
-				if(mem == 0) {
-					return FAILED;
-				}
-
-				// Map the pte to the memory
-				if(mappages(p->pgdir, va + (i * PGSIZE), PGSIZE, V2P(mem), PTE_W|PTE_U) < 0) {
-					kfree(mem);
-					return FAILED;
+				else {
+					//my_pte = walkpgdir(p->pgdir, va + (i * PGSIZE), 1); // Alloc pte
+					//*my_pte = *my_pte | PTE_P; // Set present
 				}
 			}
 			
-		// Add to mapping structure
-		p->mapping_count++;
-		m->inuse = 1;
-		m->addr = addr;
-		m->length = length;
+			// Add to mapping structure
+			p->mapping_count++;
+			m->inuse = 1;
+			m->addr = addr;
+			m->length = length;
 	}
 	return addr;
 }

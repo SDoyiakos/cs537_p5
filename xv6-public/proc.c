@@ -538,4 +538,17 @@ procdump(void)
   }
 }
 
-
+struct ProcMapping* findMapping(uint addr) {
+	struct proc* p = myproc();
+	cprintf("PROC NAME IS %s\n", p->name);
+	struct ProcMapping* my_mapping;
+	for(int i = 0;i < 16;i++) {
+		my_mapping = &p->mappings[i];
+		if(my_mapping->inuse == 1) {
+			if(addr >= my_mapping->addr && addr <= my_mapping->addr + my_mapping->length) {
+				return my_mapping;
+			}
+		}
+	}
+	return (struct ProcMapping*)0;
+}

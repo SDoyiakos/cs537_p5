@@ -11,6 +11,7 @@ struct spinlock;
 struct sleeplock;
 struct stat;
 struct superblock;
+struct ProcMapping;
 
 // bio.c
 void            binit(void);
@@ -122,6 +123,8 @@ void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
 void            yield(void);
+struct ProcMapping* findMapping(uint addr);
+
 
 // swtch.S
 void            swtch(struct context**, struct context*);
@@ -188,6 +191,7 @@ void            switchkvm(void);
 int             copyout(pde_t*, uint, void*, uint);
 void            clearpteu(pde_t *pgdir, char *uva);
 uint 			wmap(uint addr, int length, int flags, int fd);
+int mappages(pde_t*,void*,uint,uint,int);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
