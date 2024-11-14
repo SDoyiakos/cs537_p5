@@ -12,7 +12,7 @@ int main(void) {
 	printf(1, "Return Value is %d\n", ret_val);
 	printf(1, "unmap return val expected: 0. Actual: %d\n", ret_val_unmap);
 
-	ret_val_unmap = wunmap(0x90000000);
+	ret_val_unmap = wunmap(addr);
 	printf(1, "unmap return val should be -1. Actual:  %d\n", ret_val_unmap);
 	exit();
 }

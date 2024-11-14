@@ -391,10 +391,10 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 //te. So, wunmap does not partially unmap any mmap.
 int wunmap(uint addr){
 
-	// check if the mapping exits
 	struct proc* p = myproc();
 	ProcMapping* m = 0;
 	
+  // check if the mapping exits
 	for(int i = 0; i < 16;i++) {
 		if((p->mappings[i]).addr == addr) { // Found free entry
 			m = &p->mappings[i];
@@ -402,16 +402,28 @@ int wunmap(uint addr){
 		}
 	}
 
-	// what does inuse do? When would it not be set to 1?	
+	// Assume inuse means that is an invalid mapping	
 	if((m == 0) | (m->inuse != 1)){
 		return -1;	
 	}
 
-	void* end = (void*)(addr + m->length);
-	void* va = (void*)(addr);	
+ // If its a file based mapping
+  int fd = -1;
+  struct file *pfile = &p->ofile[0];
+  if((0 < m->fd) & (m->fd < NOFILE)){
+    fd = m->fd;
+    pfile = &p->ofile[fd];
+  }
 
-	while(va < end){
-		
+
+	void* va_end = (void*)(addr + m->length);
+	void* va = (void*)(addr);	
+	while(va < va_end){
+
+    if(0 <= fd){
+      filewrite(pfile, va, PGSIZE);
+    }
+
 		pte_t *pte = walkpgdir(p->pgdir, va, 0);
 		uint physical_address = PTE_ADDR(*pte);
 		kfree(P2V(physical_address));

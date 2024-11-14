@@ -40,6 +40,7 @@ typedef struct {
 	uint addr;
 	int length;
 	int inuse;
+  int fd;
 } ProcMapping;
 
 // Per-process state
