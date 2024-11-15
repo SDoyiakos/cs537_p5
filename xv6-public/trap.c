@@ -96,7 +96,7 @@ trap(struct trapframe *tf)
 
 		// Map the page to the mem region
 		if(mappages(myproc()->pgdir, (void*)PGROUNDDOWN(flt_addr), PGSIZE, V2P(mem), PTE_W|PTE_U) <0) {
-			kfree(mem)
+			kfree(mem);
 			cprintf("Failed to map at addr 0x%x\n", PGROUNDDOWN(flt_addr));
 			exit();
 		}

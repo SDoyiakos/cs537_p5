@@ -454,13 +454,18 @@ uint wmap(uint addr, int length, int flags, int fd) {
 			// Checking each PTE we want to see if its being used
 			for(int i = 0;i < page_count;i++) {
 				my_pte = walkpgdir(p->pgdir, va + (i * PGSIZE), 0); // Retrieve pte
-				if(my_pte != 0 && (*my_pte & PTE_P)) { // Dont map if mapped already
+
+				// Check pte isnt used
+				if(my_pte != 0 && (*my_pte & PTE_P)) { 
+					cprintf("PTE already used at addr 0x%x\n", addr);
 					return FAILED;
 				}
-				else {
-					//my_pte = walkpgdir(p->pgdir, va + (i * PGSIZE), 1); // Alloc pte
-					//*my_pte = *my_pte | PTE_P; // Set present
-				}
+			}
+
+			// Check mapping isnt already found
+			if(findOverlap(addr, page_count)) {
+				cprintf("Mapping already found or overlapping\n");
+				return FAILED;
 			}
 			
 			// Add to mapping structure

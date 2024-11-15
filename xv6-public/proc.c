@@ -540,15 +540,24 @@ procdump(void)
 
 struct ProcMapping* findMapping(uint addr) {
 	struct proc* p = myproc();
-	cprintf("PROC NAME IS %s\n", p->name);
 	struct ProcMapping* my_mapping;
 	for(int i = 0;i < 16;i++) {
 		my_mapping = &p->mappings[i];
 		if(my_mapping->inuse == 1) {
-			if(addr >= my_mapping->addr && addr <= my_mapping->addr + my_mapping->length) {
+			if(addr >= my_mapping->addr && addr < my_mapping->addr + my_mapping->length) {
 				return my_mapping;
 			}
 		}
 	}
 	return (struct ProcMapping*)0;
+}
+
+int findOverlap(uint addr, uint page_count){
+	for(int i = 0;i<page_count;i++) {
+		if(findMapping(addr) != 0) {
+			return 1;
+		}
+		addr+=PGSIZE;
+	}
+	return 0;
 }

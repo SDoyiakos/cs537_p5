@@ -124,6 +124,7 @@ int             wait(void);
 void            wakeup(void*);
 void            yield(void);
 struct ProcMapping* findMapping(uint addr);
+int findOverlap(uint, uint);
 
 
 // swtch.S
