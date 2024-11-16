@@ -400,6 +400,58 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
   return 0;
 }
 
+//wunmap removes the mapping starting at addr from the process virtual address space.
+// If it's a file-backed mapping with MAP_SHARED, it writes the memory data back to the file to ensure the file remains up-to-da
+//te. So, wunmap does not partially unmap any mmap.
+int wunmap(uint addr){
+
+	struct proc* p = myproc();
+	ProcMapping* m = 0;
+	
+  // check if the mapping exits
+	for(int i = 0; i < 16;i++) {
+		if((p->mappings[i]).addr == addr) { // Found free entry
+			m = &p->mappings[i];
+			break;
+		}
+	}
+
+	// Assume inuse means that is an invalid mapping	
+	if((m == 0) | (m->inuse != 1)){
+		return -1;	
+	}
+
+ // If its a file based mapping
+  int fd = -1;
+  struct file *pfile = &p->ofile[0];
+  if((0 < m->fd) & (m->fd < NOFILE)){
+    fd = m->fd;
+    pfile = &p->ofile[fd];
+  }
+
+
+	void* va_end = (void*)(addr + m->length);
+	void* va = (void*)(addr);	
+	while(va < va_end){
+
+    if(0 <= fd){
+      filewrite(pfile, va, PGSIZE);
+    }
+
+		pte_t *pte = walkpgdir(p->pgdir, va, 0);
+		uint physical_address = PTE_ADDR(*pte);
+		kfree(P2V(physical_address));
+		*pte = 0;
+		va += PGSIZE;
+	}
+
+	// update meta data
+	m->inuse = 0;	
+		
+	return 0;
+
+}
+
 uint wmap(uint addr, int length, int flags, int fd) {
 	struct proc* p = myproc(); // The current process
 	struct ProcMapping* m; // The mapping entry of the current proc
@@ -469,10 +521,12 @@ uint wmap(uint addr, int length, int flags, int fd) {
 			}
 			
 			// Add to mapping structure
-			p->mapping_count++;
-			m->inuse = 1;
-			m->addr = addr;
-			m->length = length;
+		p->mapping_count++;
+		m->inuse = 1;
+		m->addr = addr;
+		m->length = length;
+		
+
 	}
 	return addr;
 }
