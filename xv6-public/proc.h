@@ -41,7 +41,7 @@ struct ProcMapping {
 	int length;
 	int inuse;
   int fd;
-} ProcMapping;
+};
 
 // Per-process state
 struct proc {
