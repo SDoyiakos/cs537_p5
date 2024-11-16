@@ -85,26 +85,32 @@ trap(struct trapframe *tf)
 	char* mem; // Used to hold kalloc addr
 	
 	curr_mapping = findMapping(flt_addr); // Get current mapping
-	if(curr_mapping != (struct ProcMapping*)0) { // If a mapping is found
 
-		// Allocate memory
-		mem = kalloc();
-		if(mem == 0) { 
-			cprintf("Page fault kalloc failed\n");
-			exit();
-		}
 
-		// Map the page to the mem region
-		if(mappages(myproc()->pgdir, (void*)PGROUNDDOWN(flt_addr), PGSIZE, V2P(mem), PTE_W|PTE_U) <0) {
-			kfree(mem);
-			cprintf("Failed to map at addr 0x%x\n", PGROUNDDOWN(flt_addr));
-			exit();
-		}
-	}
-	else {
+  if(curr_mapping == (struct ProcMapping*)0){
 		cprintf("Unresolved page fault\n");
 		exit();
-	}
+  }
+
+  //FOUND MAPPING
+  // Allocate memory
+  mem = kalloc();
+  if(mem == 0) { 
+    cprintf("Page fault kalloc failed\n");
+    exit();
+  }
+
+
+  // Map the page to the mem region
+  if(mappages(myproc()->pgdir, (void*)PGROUNDDOWN(flt_addr), PGSIZE, V2P(mem), PTE_W|PTE_U) <0) {
+    kfree(mem);
+    cprintf("Failed to map at addr 0x%x\n", PGROUNDDOWN(flt_addr));
+    exit();
+  }
+
+  
+	
+	
 	break;
 
   //PAGEBREAK: 13

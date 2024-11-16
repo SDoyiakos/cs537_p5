@@ -544,7 +544,7 @@ struct ProcMapping* findMapping(uint addr) {
 	for(int i = 0;i < 16;i++) {
 		my_mapping = &p->mappings[i];
 		if(my_mapping->inuse == 1) {
-			if(addr >= my_mapping->addr && addr < my_mapping->addr + my_mapping->length) {
+			if ((my_mapping->addr <= addr) && (addr < (my_mapping->addr + my_mapping->length))) {
 				return my_mapping;
 			}
 		}

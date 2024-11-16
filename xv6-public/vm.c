@@ -406,7 +406,7 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 int wunmap(uint addr){
 
 	struct proc* p = myproc();
-	ProcMapping* m = 0;
+	ProcMapping *m =0;
 	
   // check if the mapping exits
 	for(int i = 0; i < 16;i++) {
@@ -496,8 +496,18 @@ uint wmap(uint addr, int length, int flags, int fd) {
 	if(addr + length > UPPER_BOUND) {
 		return FAILED;
 	}
+
+  // check for file based mapping
+  if((flags & MAP_ANONYMOUS) != MAP_ANONYMOUS) {
+		m->fd = fd;
+	} else {
+    m->fd = -1;
+  }
 				
 	switch(flags) {
+
+    //WHAT ABOUT EDGE CASE WHERE USER CALLS WUNMAP TO SAME REGION TWICE?
+    // TODO: check the current memory mappings to see if address is already in use but not allocated. 
 		case (MAP_SHARED|MAP_ANONYMOUS|MAP_FIXED): // Mapping without file backing
 		
 			va = (void*)(addr);
@@ -525,9 +535,8 @@ uint wmap(uint addr, int length, int flags, int fd) {
 		m->inuse = 1;
 		m->addr = addr;
 		m->length = length;
-		
 
-	}
+
 	return addr;
 }
 
