@@ -101,11 +101,20 @@ trap(struct trapframe *tf)
   }
 
 
+
+  void *va = (void*)PGROUNDDOWN(flt_addr);
   // Map the page to the mem region
-  if(mappages(myproc()->pgdir, (void*)PGROUNDDOWN(flt_addr), PGSIZE, V2P(mem), PTE_W|PTE_U) <0) {
+  if(mappages(myproc()->pgdir, va, PGSIZE, V2P(mem), PTE_W|PTE_U) <0) {
     kfree(mem);
     cprintf("Failed to map at addr 0x%x\n", PGROUNDDOWN(flt_addr));
     exit();
+  }
+
+    // if file backed mapping
+  if(curr_mapping->fd != -1){
+    // read file
+    struct file *f = myproc()->ofile[curr_mapping->fd];
+    fileread(f, va, PGSIZE);
   }
 
   
