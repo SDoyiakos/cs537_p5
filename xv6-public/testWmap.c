@@ -8,12 +8,11 @@ int main(void) {
 	*ret_val = 5;
 	printf(1, "VALUE ALLOCATED IS %d\n", *ret_val);
 
-	printf(1, "wunmap(ret_val). Expect a page fault\n");
+
+	printf(1, "wunmap(%d). Expect a page fault\n", ret_val);
 	wunmap((int)ret_val);
 
 	printf(1, "wunmap(ret_val): %d\n", *ret_val);
-
-
 
 	
 	exit();

@@ -426,7 +426,6 @@ int wunmap(uint addr)
     return -1;
   }
 
-  cprintf("found mapping:");
   // If its a file based mapping
   int fd = -1;
   struct file *pfile = p->ofile[0];
@@ -447,14 +446,14 @@ int wunmap(uint addr)
       filewrite(pfile, va, PGSIZE);
     }
     cprintf("va: %d\n", va);
+
     pte_t *pte = walkpgdir(p->pgdir, va, 0);
-    uint pa = PTE_ADDR(*pte);
-    if(pa == 0) {
-      cprintf("error. pa == 0\n");
-      panic("wunmap\n");
+    if (*pte != 0)
+    {
+      uint pa = PTE_ADDR(*pte);
+      kfree(P2V(pa));
+      *pte = 0;
     }
-    kfree(P2V(pa));
-    *pte = 0;
     va += PGSIZE;
   }
 
@@ -563,11 +562,8 @@ uint wmap(uint addr, int length, int flags, int fd)
     m->inuse = 1;
     m->addr = addr;
     m->length = length;
-
   }
   return addr;
-
-
 }
 
 // PAGEBREAK!
