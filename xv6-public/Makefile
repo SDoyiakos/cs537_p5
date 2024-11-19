@@ -182,7 +182,6 @@ UPROGS=\
 	_wc\
 	_zombie\
 	_testWmap\
-	_writePerms\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
