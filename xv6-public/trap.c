@@ -88,6 +88,7 @@ trap(struct trapframe *tf)
 	char* mem; // Used to hold kalloc addr
 	
 	curr_mapping = findMapping(flt_addr); // Get current mapping
+	cprintf("curr_mapping: %d\n", curr_mapping->addr);
 	if(curr_mapping != (struct ProcMapping*)0) { // If a mapping is found
 
 		// Allocate memory
@@ -106,8 +107,13 @@ trap(struct trapframe *tf)
 		
 		struct file* my_file = 0;
 		my_file = myproc()->ofile[curr_mapping->fd];
-		my_file->off = flt_addr - curr_mapping->addr; // Set offset in file
+//		if(flt_addr == curr_mapping->addr){
+//
+//			my_file->off = 0;
+//		}
 		
+		my_file->off = flt_addr - curr_mapping->addr;
+		cprintf("flt_addr: %x\n", flt_addr);
 		// Read from file into the page
 		if(my_file != 0 && fileread(my_file, (char*)flt_addr, PGSIZE) == -1) {
 			cprintf("Failed to read from file\n");

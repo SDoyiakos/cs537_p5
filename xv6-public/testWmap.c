@@ -9,41 +9,44 @@ int main(void) {
 	int write_ret;
 
 	for(int i = 0; i < 100; i++){
-		write_ret = write(fd,"abc\n", 4);
+		char * val = (char)i;
+		
+		write_ret = write(fd,val, 4);
 	}
+
 
 	printf(1, "fd: %d\n", fd);
 	printf(1, "Write return val is %d\n", write_ret);
 
 	my_ret_val = (char*)wmap(0x60000000, 8192, MAP_FIXED|MAP_SHARED,fd);
 	printf(1,"Return value is 0x%x\n", my_ret_val);
-	// printf(1,"The file contains %s\n", my_ret_val);
+	printf(1,"The file contains %c\n", *my_ret_val);
 
-	
-//	*my_ret_val = 'p';
-//	*(my_ret_val + 1) = 'h';
-//	*(my_ret_val + 2) = 'o';
-//	*(my_ret_val + 3) = 'e';
-//	*(my_ret_val + 4) = 'n';
-//	*(my_ret_val + 5) = 'i';
-//	*(my_ret_val + 6) = 'x';
-//
-//
-//	*(my_ret_val + 40) = 'p';
-//	*(my_ret_val + 41) = 'h';
-//	*(my_ret_val + 42) = 'o';
-//	*(my_ret_val + 43) = 'e';
-//	*(my_ret_val + 44) = 'n';
-//	*(my_ret_val + 45) = 'i';
-//	*(my_ret_val + 46) = 'x';
+	*my_ret_val = 'p';
+	*(my_ret_val + 1) = 'h';
+	*(my_ret_val + 2) = 'o';
+	*(my_ret_val + 3) = 'e';
+	*(my_ret_val + 4) = 'n';
+	*(my_ret_val + 5) = 'i';
+	*(my_ret_val + 6) = 'x';
 
-//	*(my_ret_val + 4096) = 'p';
-//	*(my_ret_val + 4097) = 'h';
-//	*(my_ret_val + 4098) = 'o';
-//	*(my_ret_val + 4099) = 'e';
-//	*(my_ret_val + 4100) = 'n';
-//	*(my_ret_val + 4101) = 'i';
-//	*(my_ret_val + 4102) = 'x';
+
+	*(my_ret_val + 40) = 'p';
+	*(my_ret_val + 41) = 'h';
+	*(my_ret_val + 42) = 'o';
+	*(my_ret_val + 43) = 'e';
+	*(my_ret_val + 44) = 'n';
+	*(my_ret_val + 45) = 'i';
+	*(my_ret_val + 46) = 'x';
+
+	printf(1, "va: %x\n", my_ret_val + 4096);
+	*(my_ret_val + 4096) = 'p';
+	*(my_ret_val + 4097) = 'h';
+	*(my_ret_val + 4098) = 'o';
+	*(my_ret_val + 4099) = 'e';
+	*(my_ret_val + 4100) = 'n';
+	*(my_ret_val + 4101) = 'i';
+	*(my_ret_val + 4102) = 'x';
 
 
 	

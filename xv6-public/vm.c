@@ -438,31 +438,25 @@ int wunmap(uint addr){
 	void* va_end = (void*)(addr + m->length);
 	void* va = (void*)(addr);	
 	pfile->off = 0;
-	cprintf("line 441\n");
 	while(va < va_end){
 
 		pte_t *pte = walkpgdir(p->pgdir, va, 0);
-		cprintf("passed walkpgdir(). pte = %d\n", pte);
 		if(pte != 0) {
 		cprintf("pte != 0\n");
 		    if(0 <= fd){
-				cprintf("attempting to filewrite\n");	
 			    int fw_status =filewrite(pfile, va, PGSIZE);
-				cprintf("done w filewrite()\n");
 				if(fw_status == -1){
 					cprintf("failed filewrite()\n");
 					panic("failed filewrite()");
 		
 				}
 		    }
-			cprintf("passed filebacked testing. fd: %d\n", fd);
 			uint physical_address = PTE_ADDR(*pte);
 			kfree(P2V(physical_address));
 			*pte = 0;
 		}
 		va += PGSIZE;
 	}
-	cprintf("line 464\n");
 	// update meta data
 	m->inuse = 0;	
 		
