@@ -7,7 +7,10 @@
 #include "proc.h"
 #include "elf.h"
 #include "wmap.h"
-
+#include "spinlock.h"
+#include "fs.h"
+#include "sleeplock.h"
+#include "file.h"
 extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
 
@@ -404,6 +407,7 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 // If it's a file-backed mapping with MAP_SHARED, it writes the memory data back to the file to ensure the file remains up-to-da
 //te. So, wunmap does not partially unmap any mmap.
 int wunmap(uint addr){
+	cprintf("wunmap()\n");
 
 	struct proc* p = myproc();
 	struct ProcMapping* m = 0;
@@ -422,32 +426,43 @@ int wunmap(uint addr){
 	}
 
  // If its a file based mapping
-  int fd = -1;
-  struct file *pfile = p->ofile[0];
-  if((0 < m->fd) & (m->fd < NOFILE)){
-    fd = m->fd;
-    pfile = p->ofile[fd];
-  }
+	int fd = -1;
+	struct file *pfile = p->ofile[0];
+	if((0 < m->fd) & (m->fd < NOFILE)){
+		fd = m->fd;
+		pfile = p->ofile[fd];
+	 }
+
 
 
 	void* va_end = (void*)(addr + m->length);
 	void* va = (void*)(addr);	
+	pfile->off = 0;
+	cprintf("line 441\n");
 	while(va < va_end){
 
-    if(0 <= fd){
-      filewrite(pfile, va, PGSIZE);
-    }
-
-		
 		pte_t *pte = walkpgdir(p->pgdir, va, 0);
-		if(*pte != 0) {
+		cprintf("passed walkpgdir(). pte = %d\n", pte);
+		if(pte != 0) {
+		cprintf("pte != 0\n");
+		    if(0 <= fd){
+				cprintf("attempting to filewrite\n");	
+			    int fw_status =filewrite(pfile, va, PGSIZE);
+				cprintf("done w filewrite()\n");
+				if(fw_status == -1){
+					cprintf("failed filewrite()\n");
+					panic("failed filewrite()");
+		
+				}
+		    }
+			cprintf("passed filebacked testing. fd: %d\n", fd);
 			uint physical_address = PTE_ADDR(*pte);
 			kfree(P2V(physical_address));
 			*pte = 0;
 		}
 		va += PGSIZE;
 	}
-
+	cprintf("line 464\n");
 	// update meta data
 	m->inuse = 0;	
 		
