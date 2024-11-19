@@ -407,8 +407,6 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 // If it's a file-backed mapping with MAP_SHARED, it writes the memory data back to the file to ensure the file remains up-to-da
 //te. So, wunmap does not partially unmap any mmap.
 int wunmap(uint addr){
-	cprintf("wunmap()\n");
-
 	struct proc* p = myproc();
 	struct ProcMapping* m = 0;
 	
@@ -442,7 +440,6 @@ int wunmap(uint addr){
 
 		pte_t *pte = walkpgdir(p->pgdir, va, 0);
 		if(pte != 0) {
-		cprintf("pte != 0\n");
 		    if(0 <= fd){
 			    int fw_status =filewrite(pfile, va, PGSIZE);
 				if(fw_status == -1){
