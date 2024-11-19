@@ -550,6 +550,10 @@ uint wmap(uint addr, int length, int flags, int fd) {
 	return addr;
 }
 
+uint va2pa(uint va){
+	return 0;
+	}
+
 
 //PAGEBREAK!
 // Blank page.

@@ -125,7 +125,11 @@ int sys_wunmap(void) {
 }
 
 int sys_va2pa(void) {
-	return 0;
+	int addr;
+	if(argint(0, &addr) == -1) {
+		return -1;
+	}
+	return va2pa(addr);
 }
 
 int sys_getwmapinfo(void) {

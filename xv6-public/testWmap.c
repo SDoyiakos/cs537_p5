@@ -3,7 +3,8 @@
 #include "user.h"
 #include "fcntl.h"
 
-int main(void) {
+int testWmapAndUnmap(){
+
   	char* my_ret_val;
 	int fd = open("testFile", O_CREATE|O_RDWR);
 	int write_ret;
@@ -57,5 +58,14 @@ int main(void) {
 		printf(1, "calling wunmap() failed\n");
 	}
 	close(fd);
+
+
+	return 0;
+}
+
+
+
+int main(void) {
+	testWmapAndUnmap();
 	exit();
 }
