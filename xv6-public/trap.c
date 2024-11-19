@@ -110,11 +110,18 @@ trap(struct trapframe *tf)
     exit();
   }
 
-    // if file backed mapping
+  // if file backed mapping
+  cprintf("fd: %d\n", curr_mapping->fd);
   if(curr_mapping->fd != -1){
     // read file
-    struct file *f = myproc()->ofile[curr_mapping->fd];
-    fileread(f, va, PGSIZE);
+    cprintf("lazy allocation file backed\n");
+	int fd = curr_mapping->fd;
+	cprintf("fd: %d", fd);	
+    struct file *f = myproc()->ofile[fd];
+    if (0 > fileread(f, va, PGSIZE)){
+      cprintf("failed file read\n");
+      exit();
+    }
   }
 
   
