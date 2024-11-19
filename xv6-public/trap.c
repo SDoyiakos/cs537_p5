@@ -7,6 +7,9 @@
 #include "x86.h"
 #include "traps.h"
 #include "spinlock.h"
+#include "fs.h"
+#include "sleeplock.h"
+#include "file.h"
 
 // Interrupt descriptor table (shared by all CPUs).
 struct gatedesc idt[256];
@@ -79,9 +82,9 @@ trap(struct trapframe *tf)
     break;
 
   case T_PGFLT:
+  	
   	struct ProcMapping* curr_mapping; // Pointer to current mapping
   	uint flt_addr = rcr2(); // The page fault addr
-  	//cprintf("Page fault at addr 0x%x\n", flt_addr);
 	char* mem; // Used to hold kalloc addr
 	
 	curr_mapping = findMapping(flt_addr); // Get current mapping
@@ -98,6 +101,16 @@ trap(struct trapframe *tf)
 		if(mappages(myproc()->pgdir, (void*)PGROUNDDOWN(flt_addr), PGSIZE, V2P(mem), PTE_W|PTE_U) <0) {
 			kfree(mem);
 			cprintf("Failed to map at addr 0x%x\n", PGROUNDDOWN(flt_addr));
+			exit();
+		}
+		
+		struct file* my_file = 0;
+		my_file = myproc()->ofile[curr_mapping->fd];
+		my_file->off = flt_addr - curr_mapping->addr; // Set offset in file
+		
+		// Read from file into the page
+		if(my_file != 0 && fileread(my_file, (char*)flt_addr, PGSIZE) == -1) {
+			cprintf("Failed to read from file\n");
 			exit();
 		}
 	}
@@ -125,7 +138,7 @@ trap(struct trapframe *tf)
 
   // Force process exit if it has been killed and is in user space.
   // (If it is still executing in the kernel, let it keep running
-  // until it gets to the regular system call return.)
+  // until it gets to the regular system call return.) 
   if(myproc() && myproc()->killed && (tf->cs&3) == DPL_USER)
     exit();
 

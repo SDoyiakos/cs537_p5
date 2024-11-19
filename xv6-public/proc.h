@@ -40,6 +40,7 @@ struct ProcMapping {
 	uint addr;
 	int length;
 	int inuse;
+	int fd;
 };
 
 // Per-process state

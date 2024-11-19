@@ -445,34 +445,54 @@ uint wmap(uint addr, int length, int flags, int fd) {
 		return FAILED;
 	}
 				
-	switch(flags) {
-		case (MAP_SHARED|MAP_ANONYMOUS|MAP_FIXED): // Mapping without file backing
+
+	if((flags & (MAP_SHARED|MAP_FIXED)) == (MAP_SHARED|MAP_FIXED)) { // Mapping without file backing
 		
-			va = (void*)(addr);
-			page_count = length/PGSIZE;
+		va = (void*)(addr);
+		page_count = length/PGSIZE;
 
-			// Checking each PTE we want to see if its being used
-			for(int i = 0;i < page_count;i++) {
-				my_pte = walkpgdir(p->pgdir, va + (i * PGSIZE), 0); // Retrieve pte
+		// Checking each PTE we want to see if its being used
+		for(int i = 0;i < page_count;i++) {
+			my_pte = walkpgdir(p->pgdir, va + (i * PGSIZE), 0); // Retrieve pte
 
-				// Check pte isnt used
-				if(my_pte != 0 && (*my_pte & PTE_P)) { 
-					cprintf("PTE already used at addr 0x%x\n", addr);
-					return FAILED;
-				}
-			}
-
-			// Check mapping isnt already found
-			if(findOverlap(addr, page_count)) {
-				cprintf("Mapping already found or overlapping\n");
+			// Check pte isnt used
+			if(my_pte != 0 && (*my_pte & PTE_P)) { 
+				cprintf("PTE already used at addr 0x%x\n", addr);
 				return FAILED;
 			}
-			
-			// Add to mapping structure
-			p->mapping_count++;
-			m->inuse = 1;
-			m->addr = addr;
-			m->length = length;
+		}
+
+		// Check mapping isnt already found
+		if(findOverlap(addr, page_count)) {
+			cprintf("Mapping already found or overlapping\n");
+			return FAILED;
+		}
+
+		// Check if file backed
+		if((flags & MAP_ANONYMOUS) == 0) { 
+			if(fd == - 1) {
+				cprintf("File backed mapping with invalid fd\n");
+				return FAILED;
+			}
+			m->fd = fd;
+		}
+		else {
+			m->fd = -1;
+		}
+		
+		// Add to mapping structure
+		p->mapping_count++;
+		m->inuse = 1;
+		m->addr = addr;
+		m->length = length;
+
+		// Check if file backed
+		if((flags & MAP_ANONYMOUS) == 0) {
+			m->fd = fd;
+		}
+		else {
+			m->fd = -1;
+		}			
 	}
 	return addr;
 }
