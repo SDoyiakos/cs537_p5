@@ -224,9 +224,10 @@ fork(void)
   		for(uint k = new_m->addr;k < new_m->addr + new_m->length;k+=PGSIZE) {
   			pte = walkpgdir(curproc->pgdir, (void*)k, 0); // Grab PTE at addr in parent
   			mappages(np->pgdir, (void*)k, PGSIZE, PTE_ADDR(*pte), PTE_U|PTE_W); // Map same addr with phys addr
-  			cprintf("Mapping fork addr 0x%x\n");
+  			//cprintf("Mapping fork addr 0x%x\n");
   		}
   	}
+  	np->mapping_count = curproc->mapping_count;
   }
 
   // Clear %eax so that fork returns 0 in the child.
