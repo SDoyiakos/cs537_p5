@@ -454,6 +454,10 @@ int wunmap(uint addr){
 		}
 		va += PGSIZE;
 	}
+	// Close file
+	if(fd != -1) {
+		fileclose(pfile);
+	}
 	// update meta data
 	m->inuse = 0;	
 	p->mapping_count--;
