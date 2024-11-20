@@ -456,7 +456,7 @@ int wunmap(uint addr){
 	}
 	// update meta data
 	m->inuse = 0;	
-		
+	p->mapping_count--;
 	return 0;
 
 }
