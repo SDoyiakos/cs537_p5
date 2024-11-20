@@ -122,7 +122,7 @@ trap(struct trapframe *tf)
 		}
 	}
 	else {
-		cprintf("Unresolved page fault\n");
+		cprintf("Segmentation Fault\n");
 		exit();
 	}
 	break;
