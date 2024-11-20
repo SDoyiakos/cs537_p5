@@ -73,8 +73,33 @@ int test_va2pa(void){
 	return 0;
 }
 
+int test_getwmapinfo(void){
+	struct wmapinfo *wminfo= malloc(1000);
+	printf(1, "test_getwmapinfo() with 0 mappings: %d\n", getwmapinfo(wminfo));
+	printf(1, "expected num mappings: 0 actual: %d\n", wminfo->total_mmaps);
+	for(int i = 0; i < 16; i++){
+		printf(1, "mapping %d expected start address: %x actual: %x\n", i, 0, wminfo->addr[i]);
+		printf(1, "mapping %d expected start length: %x actual: %x\n", i, 0, wminfo->length[i]);
+		printf(1, "mapping %d expectedloaded pages: %x actual: %x\n", i, 0, wminfo->n_loaded_pages[i]);
+	}
+
+	int * my_ret_val = (int*)wmap(0x60000000, 8192, MAP_FIXED|MAP_SHARED|MAP_ANONYMOUS, -1);
+	*my_ret_val = 6;
+	printf(1, "test_getwmapinfo() with 1 mappings: %d\n", getwmapinfo(wminfo));
+	printf(1, "expected num mappings: 1 actual: %d\n", wminfo->total_mmaps);
+	for(int i = 0; i < 16; i++){
+		printf(1, "mapping %d expected start address: %x actual: %x\n", i, 0, wminfo->addr[i]);
+		printf(1, "mapping %d expected start length: %x actual: %x\n", i, 0, wminfo->length[i]);
+		printf(1, "mapping %d expectedloaded pages: %x actual: %x\n", i, 0, wminfo->n_loaded_pages[i]);
+	}
+	
+	return(0);	
+
+}
+
 int main(void) {
 	//testWmapAndUnmap();
-	test_va2pa();
+	//test_va2pa();
+	test_getwmapinfo();
 	exit();
 }

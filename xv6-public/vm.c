@@ -563,6 +563,68 @@ uint va2pa(uint va){
 
 	}
 
+int getwmapinfo(struct wmapinfo *wminfo){
+	struct proc* p = myproc();
+	wminfo->total_mmaps = p->mapping_count;
+	struct ProcMapping *m;
+	for(int i = 0; i < MAX_WMMAP_INFO; i++){
+		m = &p->mappings[i];
+
+		if(m->inuse != 1){
+			wminfo->addr[i] = 0;
+			wminfo->length[i] = 0;
+			continue;
+		}
+
+		int start_addr = m->addr;
+		int length = m->length;
+		wminfo->addr[i] = start_addr;
+		wminfo->length[i] = length;
+
+		for(int va = start_addr + 1; va <(start_addr + length); va+= PGSIZE){
+
+			pte_t *pte = walkpgdir(p->pgdir, (void*)va, 0);
+			cprintf("va: %x\n", va);	
+			if(pte != 0){
+				cprintf("found loaded page table\n");
+				if(*pte & PTE_P){
+					wminfo->n_loaded_pages[i]++;	
+				}
+			}	
+			
+		//	if(*pte & PTE_P){
+		//		cprintf("pte allocated\n");
+
+		//	}
+		}
+//		for(int va = start_addr; va < start_addr + length; va += PGSIZE){	
+//			pde_t *pde;
+//			pte_t *pgtab;
+//
+//			pde = &p->pgdir[PDX(va)];
+//				
+//			if(*pde & PTE_P){
+//				pgtab = (pte_t*)P2V(PTE_ADDR(*pde));
+//			}else {
+//				continue;
+//			}	 
+//
+//			if( pgtab[PTX(va)] & PTE_P )
+//{
+//				wminfo->n_loaded_pages[i]++;	
+//			}
+//		}	
+		
+	} 
+
+
+	// find number of allocatd pages
+	// for each mapping, 
+
+	
+	return 0;
+}
+
 
 //PAGEBREAK!
 // Blank page.
