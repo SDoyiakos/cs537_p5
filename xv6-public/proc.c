@@ -205,6 +205,31 @@ fork(void)
   np->parent = curproc;
   *np->tf = *curproc->tf;
 
+  // Map mappings to child
+  struct ProcMapping* old_m;
+  struct ProcMapping* new_m;
+  pte_t* pte;
+  for(int i =0;i<16;i++) {
+  	old_m = &curproc->mappings[i]; 
+
+  	// Bring over mapping if inuse in old
+  	if(old_m->inuse == 1) {
+  		new_m = &np->mappings[i];
+  		new_m->inuse = 1;
+  		new_m->addr = old_m->addr;
+  		new_m->length = old_m->length;
+  		new_m->fd = old_m->fd;
+
+  		// Actually map it in memory
+  		for(uint k = new_m->addr;k < new_m->addr + new_m->length;k+=PGSIZE) {
+  			pte = walkpgdir(curproc->pgdir, (void*)k, 0); // Grab PTE at addr in parent
+  			mappages(np->pgdir, (void*)k, PGSIZE, PTE_ADDR(*pte), PTE_U|PTE_W); // Map same addr with phys addr
+  			//cprintf("Mapping fork addr 0x%x\n");
+  		}
+  	}
+  	np->mapping_count = curproc->mapping_count;
+  }
+
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
 
@@ -264,6 +289,23 @@ exit(void)
       if(p->state == ZOMBIE)
         wakeup1(initproc);
     }
+  }
+
+  // Remove user mappings
+  struct ProcMapping* m;
+  pte_t* pte;
+  for(int i =0;i < 16;i++) {
+  	m = &curproc->mappings[i];
+  	if(m->inuse == 1) {
+  		for(uint k = m->addr;k<m->addr+m->length;k+=PGSIZE) { // Get each mapping
+  			pte = walkpgdir(curproc->pgdir, (void*)k, 0); // Retrieve PTE of addr in mapping
+  			if(pte != 0) {
+  				memset(pte,0, PGSIZE); // Set each mapping to zero
+  			}
+  			
+  		}
+  	}
+  	m->inuse = 0; // Probably isnt needed
   }
 
   // Jump into the scheduler, never to return.

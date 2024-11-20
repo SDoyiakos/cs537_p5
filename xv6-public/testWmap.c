@@ -106,9 +106,29 @@ int test_getwmapinfo(void){
 
 }
 
+int test_fork(void) {
+	int ret_val;
+	ret_val = wmap(0x60000000, 4096, MAP_FIXED|MAP_SHARED|MAP_ANONYMOUS, -1);
+	*(int*)ret_val = 25;
+	printf(1, "Ret Val before fork %d\n", *(int*)ret_val);
+	int fork_ret = fork();
+	if(fork_ret > 0) {
+		wait();
+		printf(1, "Ret Val in parent %d\n", *(int*)ret_val);
+	}
+	else if(fork_ret == 0) {
+		printf(1, "Ret Val in child %d\n", *(int*)ret_val);
+	}
+	else {
+		printf(1, "Fork experienced an error\n");
+	}
+	return 0;
+}
+
 int main(void) {
 	//testWmapAndUnmap();
 	//test_va2pa();
-	test_getwmapinfo();
+	//test_getwmapinfo();
+	test_fork();
 	exit();
 }
