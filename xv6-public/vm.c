@@ -557,7 +557,10 @@ uint va2pa(uint va){
 		return -1;
 	}
 	
-	cprintf("valid pte. val at va == %d\n", *pte);
+	if((*pte & PTE_P)== 0){
+		return -1;	
+	}
+	
 	uint physical_address = PTE_ADDR(*pte);
 	return physical_address;
 
@@ -586,47 +589,15 @@ int getwmapinfo(struct wmapinfo *wminfo){
 		for(int va = start_addr + 1; va <(start_addr + length); va+= PGSIZE){
 
 			pte_t *pte = walkpgdir(p->pgdir, (void*)va, 0);
-			cprintf("va: %x\n", va);	
 			if(pte != 0){
-				cprintf("found loaded page table\n");
 				if(*pte & PTE_P){
 					wminfo->n_loaded_pages[i]++;	
 				}
 			}	
-			
-		//	if(*pte & PTE_P){
-		//		cprintf("pte allocated\n");
-
-		//	}
-		}
-//		for(int va = start_addr; va < start_addr + length; va += PGSIZE){	
-//			pde_t *pde;
-//			pte_t *pgtab;
-//
-//			pde = &p->pgdir[PDX(va)];
-//				
-//			if(*pde & PTE_P){
-//				pgtab = (pte_t*)P2V(PTE_ADDR(*pde));
-//			}else {
-//				continue;
-//			}	 
-//
-//			if( pgtab[PTX(va)] & PTE_P )
-//{
-//				wminfo->n_loaded_pages[i]++;	
-//			}
-//		}	
-		
 	} 
-
-
-	// find number of allocatd pages
-	// for each mapping, 
-
-	
+	}
 	return 0;
 }
-
 
 //PAGEBREAK!
 // Blank page.
