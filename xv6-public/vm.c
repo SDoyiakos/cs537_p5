@@ -544,6 +544,7 @@ uint wmap(uint addr, int length, int flags, int fd) {
 		}
 		else {
 			m->fd = -1;
+			m->f = 0;
 		}
 		
 		// Add to mapping structure

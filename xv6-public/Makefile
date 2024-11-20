@@ -182,7 +182,6 @@ UPROGS=\
 	_wc\
 	_zombie\
 	_testWmap\
-	_test_8\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
