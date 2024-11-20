@@ -570,6 +570,8 @@ int getwmapinfo(struct wmapinfo *wminfo){
 	for(int i = 0; i < MAX_WMMAP_INFO; i++){
 		m = &p->mappings[i];
 
+		// number of loaded pages starts at 0
+		wminfo->n_loaded_pages[i] = 0;
 		if(m->inuse != 1){
 			wminfo->addr[i] = 0;
 			wminfo->length[i] = 0;

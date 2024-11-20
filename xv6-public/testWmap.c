@@ -93,6 +93,15 @@ int test_getwmapinfo(void){
 		printf(1, "mapping %d expectedloaded pages: %x actual: %x\n", i, 0, wminfo->n_loaded_pages[i]);
 	}
 	
+	my_ret_val = (int*)wmap(0x70000000, 8192, MAP_FIXED|MAP_SHARED|MAP_ANONYMOUS, -1);
+	*my_ret_val = 6;
+	printf(1, "test_getwmapinfo() with 2 mappings: %d\n", getwmapinfo(wminfo));
+	printf(1, "expected num mappings: 2 actual: %d\n", wminfo->total_mmaps);
+	for(int i = 0; i < 16; i++){
+		printf(1, "mapping %d expected start address: %x actual: %x\n", i, 0, wminfo->addr[i]);
+		printf(1, "mapping %d expected start length: %x actual: %x\n", i, 0, wminfo->length[i]);
+		printf(1, "mapping %d expectedloaded pages: %x actual: %x\n", i, 0, wminfo->n_loaded_pages[i]);
+	}
 	return(0);	
 
 }
