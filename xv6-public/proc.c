@@ -220,6 +220,9 @@ fork(void)
   		new_m->length = old_m->length;
   		new_m->fd = old_m->fd;
   		new_m->child_mapping=1;
+  		if(old_m->f != 0) {
+  			new_m->f = filedup(old_m->f);
+  		}
 
   		// Actually map it in memory
   		for(uint k = new_m->addr;k < new_m->addr + new_m->length;k+=PGSIZE) {
