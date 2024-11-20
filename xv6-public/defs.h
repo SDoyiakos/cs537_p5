@@ -197,5 +197,6 @@ int             mappages(pde_t*,void*,uint,uint,int);
 int				wunmap(uint addr);
 uint			va2pa(uint va);
 int				getwmapinfo(struct wmapinfo *wminfo);
+pde_t* walkpgdir(pde_t *pgdir, const void *va, int alloc);
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
