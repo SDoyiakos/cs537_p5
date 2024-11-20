@@ -436,8 +436,10 @@ int wunmap(uint addr){
 
 
 	void* va_end = (void*)(addr + m->length);
-	void* va = (void*)(addr);	
-	my_file->off = 0;
+	void* va = (void*)(addr);
+	if(my_file!=0) {
+		my_file->off = 0;
+	}
 	while(va < va_end){
 
 		pte_t *pte = walkpgdir(p->pgdir, va, 0);
