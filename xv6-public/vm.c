@@ -540,7 +540,7 @@ uint wmap(uint addr, int length, int flags, int fd) {
 				return FAILED;
 			}
 			m->fd = fd;
-			filedup(p->ofile[fd]); // Duplicate file
+			m->f = filedup(p->ofile[fd]); // Duplicate file
 		}
 		else {
 			m->fd = -1;
