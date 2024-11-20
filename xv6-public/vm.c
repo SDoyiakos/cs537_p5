@@ -424,24 +424,29 @@ int wunmap(uint addr){
 	}
 
  // If its a file based mapping
-	int fd = -1;
-	struct file *pfile = p->ofile[0];
-	if((0 < m->fd) & (m->fd < NOFILE)){
-		fd = m->fd;
-		pfile = p->ofile[fd];
-	 }
+	struct file *my_file = m->f;
+	
+//	int fd = -1;
+//	struct file *pfile = p->ofile[0];
+//	if((0 < m->fd) & (m->fd < NOFILE)){
+//		fd = m->fd;
+//		pfile = p->ofile[fd];
+//	 }
 
 
 
 	void* va_end = (void*)(addr + m->length);
-	void* va = (void*)(addr);	
-	pfile->off = 0;
+	void* va = (void*)(addr);
+	if(my_file!=0) {
+		my_file->off = 0;
+	}
 	while(va < va_end){
 
 		pte_t *pte = walkpgdir(p->pgdir, va, 0);
 		if(pte != 0) {
-		    if(0 <= fd){
-			    int fw_status =filewrite(pfile, va, PGSIZE);
+
+		    if(my_file != 0){
+			    int fw_status =filewrite(my_file, va, PGSIZE);
 				if(fw_status == -1){
 					cprintf("failed filewrite()\n");
 					panic("failed filewrite()");
@@ -457,8 +462,8 @@ int wunmap(uint addr){
 		va += PGSIZE;
 	}
 	// Close file
-	if(fd != -1) {
-		fileclose(pfile);
+	if(my_file != 0) {
+		fileclose(my_file);
 	}
 	// update meta data
 	m->inuse = 0;	

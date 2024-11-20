@@ -112,15 +112,14 @@ trap(struct trapframe *tf)
 		
 		if(my_file != 0){
 			
-			if( PGROUNDDOWN(flt_addr) == curr_mapping->addr){
-				my_file->off = 0;
-			}
+			my_file->off = PGROUNDDOWN(flt_addr) - curr_mapping->addr;
 			
 			// Read from file into the page
-			if(my_file != 0 && fileread(my_file, (char*)flt_addr, PGSIZE) == -1) {
+			if(my_file != 0 && fileread(my_file, (char*)PGROUNDDOWN(flt_addr), PGSIZE) == -1) {
 				cprintf("Failed to read from file\n");
 				exit();
 			}
+			my_file->off = 0;
 
 		} else {
 			memset(mem, 0, PGSIZE);
