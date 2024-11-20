@@ -194,5 +194,6 @@ void            clearpteu(pde_t *pgdir, char *uva);
 uint 			wmap(uint addr, int length, int flags, int fd);
 int             mappages(pde_t*,void*,uint,uint,int);
 int				wunmap(uint addr);
+uint			va2pa(uint va);
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

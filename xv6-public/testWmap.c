@@ -63,9 +63,18 @@ int testWmapAndUnmap(){
 	return 0;
 }
 
-
+int test_va2pa(void){
+	printf(1, "va2pa(x90000000). Expected: -1. Actual: %d\n", va2pa(0x90000000));
+	int* my_ret_val;
+	my_ret_val = (int*)wmap(0x60000000, 8192, MAP_FIXED|MAP_SHARED|MAP_ANONYMOUS, -1);
+	*my_ret_val = 6;
+	printf(1, "va2pa(x60000000). Expected: IDK. Actual:  %d\n", va2pa(1));
+	printf(1, "val at 0x6000000: %d\n", *((int*)my_ret_val));
+	return 0;
+}
 
 int main(void) {
-	testWmapAndUnmap();
+	//testWmapAndUnmap();
+	test_va2pa();
 	exit();
 }

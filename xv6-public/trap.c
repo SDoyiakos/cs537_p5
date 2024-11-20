@@ -105,15 +105,20 @@ trap(struct trapframe *tf)
 		}
 		
 		struct file* my_file = 0;
-		my_file = myproc()->ofile[curr_mapping->fd];
-		if(flt_addr == curr_mapping->addr){
-			my_file->off = 0;
-		}
+		int fd = curr_mapping->fd;
 		
-		// Read from file into the page
-		if(my_file != 0 && fileread(my_file, (char*)flt_addr, PGSIZE) == -1) {
-			cprintf("Failed to read from file\n");
-			exit();
+		if((0 <= fd) && (fd < NOFILE)){
+
+			my_file = myproc()->ofile[curr_mapping->fd];
+			if(flt_addr == curr_mapping->addr){
+				my_file->off = 0;
+			}
+			
+			// Read from file into the page
+			if(my_file != 0 && fileread(my_file, (char*)flt_addr, PGSIZE) == -1) {
+				cprintf("Failed to read from file\n");
+				exit();
+			}
 		}
 	}
 	else {

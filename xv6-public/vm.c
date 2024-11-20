@@ -550,8 +550,17 @@ uint wmap(uint addr, int length, int flags, int fd) {
 	return addr;
 }
 
-uint va2pa(uint va){
-	return 0;
+uint va2pa(uint va){	
+	struct proc* p = myproc();
+	pte_t *pte = walkpgdir(p->pgdir, (void *)va, 0);
+	if(pte == 0){
+		return -1;
+	}
+	
+	cprintf("valid pte. val at va == %d\n", *pte);
+	uint physical_address = PTE_ADDR(*pte);
+	return physical_address;
+
 	}
 
 
