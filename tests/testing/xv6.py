@@ -61,11 +61,11 @@ class Xv6Test(BuildTest, Test):
             )
             self.children.append(gdb_child)
 
-        child.expect_exact("init: starting sh")
-        child.expect_exact("$ ")
+        child.expect_exact("init: starting sh", timeout=self.timeout)
+        child.expect_exact("$ ", timeout=self.timeout)
         child.sendline("tester")
-        child.expect_exact("tester")
-        index = child.expect([r"(.*)\$ ", "panic"])
+        child.expect_exact("tester", timeout=self.timeout)
+        index = child.expect([r"(.*)\$ ", "panic"], timeout=self.timeout)
         # Extract the text between "tester" and "$"/"panic"
         captured_text = child.match.group(1).strip()
 
@@ -94,7 +94,7 @@ class Xv6Test(BuildTest, Test):
         matched_actions = [action for pattern, action in patterns.items() if re.search(pattern, captured_text)]
         # If all match is SUCCESS_ACTION, then the test passed
         # Otherwise, the test failed
-        if matched_actions.count(SUCCESS_ACTION) == len(matched_actions):
+        if  len(matched_actions) > 0 and matched_actions.count(SUCCESS_ACTION) == len(matched_actions):
             self.done()
         else:
             self.fail(matched_actions[0] if matched_actions else "tester failed")
