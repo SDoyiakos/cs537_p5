@@ -107,13 +107,11 @@ trap(struct trapframe *tf)
 		//zero -initialize the pages
 		
 		
-		struct file* my_file = 0;
-		int fd = curr_mapping->fd;
+		struct file* my_file = curr_mapping->f;
+//		int fd = curr_mapping->fd;
 		
-		if((0 <= fd) && (fd < NOFILE)){
+		if(my_file != 0){
 			
-			struct proc *p = myproc();	
-			my_file = p->ofile[fd];
 			if( PGROUNDDOWN(flt_addr) == curr_mapping->addr){
 				my_file->off = 0;
 			}

@@ -40,6 +40,7 @@ struct ProcMapping {
 	uint addr;
 	int length;
 	int inuse;
+	struct file *f;
 	int fd;
 	int child_mapping;
 };
@@ -62,6 +63,7 @@ struct proc {
   char name[16];               // Process name (debugging)
   struct ProcMapping mappings[16];
   int mapping_count;
+	// TODO: add wmapinfo to proc
 };
 
 // Process memory is laid out contiguously, low addresses first:
