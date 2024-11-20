@@ -302,7 +302,6 @@ exit(void)
   			if(pte != 0) {
   				memset(pte,0, PGSIZE); // Set each mapping to zero
   			}
-  			
   		}
   	}
   	m->inuse = 0; // Probably isnt needed
