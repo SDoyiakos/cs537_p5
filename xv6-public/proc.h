@@ -41,6 +41,7 @@ struct ProcMapping {
 	int length;
 	int inuse;
 	int fd;
+	int child_mapping;
 };
 
 

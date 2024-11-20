@@ -449,7 +449,9 @@ int wunmap(uint addr){
 				}
 		    }
 			uint physical_address = PTE_ADDR(*pte);
-			kfree(P2V(physical_address));
+			if(m->child_mapping == 0) {
+				kfree(P2V(physical_address));
+			}
 			*pte = 0;
 		}
 		va += PGSIZE;
@@ -547,6 +549,7 @@ uint wmap(uint addr, int length, int flags, int fd) {
 		}
 		
 		// Add to mapping structure
+		m->child_mapping = 0;
 		p->mapping_count++;
 		m->inuse = 1;
 		m->addr = addr;
