@@ -104,6 +104,9 @@ trap(struct trapframe *tf)
 			exit();
 		}
 		
+		//zero -initialize the pages
+		
+		
 		struct file* my_file = 0;
 		int fd = curr_mapping->fd;
 		
@@ -119,6 +122,11 @@ trap(struct trapframe *tf)
 				cprintf("Failed to read from file\n");
 				exit();
 			}
+		} else {
+			memset(mem, 0, PGSIZE);
+
+
+
 		}
 	}
 	else {
