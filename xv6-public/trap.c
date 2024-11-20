@@ -111,9 +111,10 @@ trap(struct trapframe *tf)
 		int fd = curr_mapping->fd;
 		
 		if((0 <= fd) && (fd < NOFILE)){
-
-			my_file = myproc()->ofile[curr_mapping->fd];
-			if(flt_addr == curr_mapping->addr){
+			
+			struct proc *p = myproc();	
+			my_file = p->ofile[fd];
+			if( PGROUNDDOWN(flt_addr) == curr_mapping->addr){
 				my_file->off = 0;
 			}
 			
@@ -122,14 +123,13 @@ trap(struct trapframe *tf)
 				cprintf("Failed to read from file\n");
 				exit();
 			}
+
 		} else {
 			memset(mem, 0, PGSIZE);
-
-
-
+			}
 		}
-	}
 	else {
+		
 		cprintf("Unresolved page fault\n");
 		exit();
 	}

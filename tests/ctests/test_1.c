@@ -11,6 +11,7 @@ char *test_name = "TEST_1";
 
 void test_va2pa(void) {
     uint va = 0x0;
+	printf(1, "testva2pa\n");
     uint pa = get_n_validate_va2pa(va);
     printf(1, "INFO: va2pa(0x%x) returned 0x%x\n", va, pa);
 }
@@ -40,9 +41,13 @@ int main() {
     printf(1, "\n\n%s\n", test_name);
 
     test_va2pa();
+	printf(1, "has va2pa\n");
     test_getwmapinfo();
+	printf(1, "getmapinfo\n");
     test_wmap();
+	printf(1, "testWmap\n");
     test_wunmap();
+	printf(1, "wunmap\n");
 
     // test ends
     success();
