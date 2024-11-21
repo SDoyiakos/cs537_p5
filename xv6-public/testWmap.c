@@ -2,6 +2,7 @@
 #include "wmap.h"
 #include "user.h"
 #include "fcntl.h"
+#include "mmu.h"
 
 int testWmapAndUnmap(){
 
@@ -125,10 +126,21 @@ int test_fork(void) {
 	return 0;
 }
 
+int test_cow(void) {
+	uint p = 0x00000600;
+	int cow_flag;
+	int cow_rw;
+	cow_flag = GETCOWF(p);
+	cow_rw = GETCOWRW(p);
+	printf(1, "COW Flag is %d\nCOW RW is %d\n", cow_flag, cow_rw);
+	return 0;
+}
+
 int main(void) {
 	//testWmapAndUnmap();
 	//test_va2pa();
 	//test_getwmapinfo();
-	test_fork();
+	//test_fork();
+	test_cow();
 	exit();
 }

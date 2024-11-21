@@ -88,7 +88,7 @@ trap(struct trapframe *tf)
 	char* mem; // Used to hold kalloc addr
 	pte_t* pte = walkpgdir(myproc()->pgdir, (void*)flt_addr, 0);
 	uint pa;
-
+	//cprintf("PTE is  0x%x Get COW F is 0x%x\n", *pte, GETCOWF(*pte));
 	// COW PGFLT
 	if(GETCOWF(*pte) == 1) {
 		if(GETCOWRW(*pte) == 0) {
@@ -98,7 +98,7 @@ trap(struct trapframe *tf)
 		}
 
 		pa = PTE_ADDR(*pte);
-
+		//cprintf("PA 0x%x REF CT %d\n", pa, getRefCnt(pa));
 		// If last reference just set write bit
 		if(getRefCnt(pa) == 1) { 
 			*pte|=PTE_W;
@@ -113,10 +113,12 @@ trap(struct trapframe *tf)
 				cprintf("Error with COW kalloc\n");
 				exit();
 			}
-			
-			memmove(mem, (char*)pa, PGSIZE);
+			//cprintf("About to map\n");
+			memmove(mem, (char*)P2V(pa), PGSIZE);
+			//cprintf("Beyond memmove\n");
 			decreaseRefCnt(pa);
-			*pte = PTE_U | PTE_W | PTE_P | V2P(mem);
+			*pte = V2P(mem) | PTE_W | PTE_P | PTE_U;
+			//cprintf("PTE NOW MAPS TO 0x%x\n", PTE_ADDR(*pte));
 			lcr3(V2P(myproc()->pgdir)); // Flush TLB
 			break;
 		}	
@@ -167,8 +169,6 @@ trap(struct trapframe *tf)
 			}
 		}
 	else {
-		cprintf("FLT ADDR is 0x%x\n", flt_addr);
-		cprintf("PTE is 0x%x\n", *pte);
 		cprintf("Segmentation Fault\n");
 		exit();
 	}

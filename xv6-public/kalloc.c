@@ -13,7 +13,7 @@ void freerange(void *vstart, void *vend);
 extern char end[]; // first address after kernel loaded from ELF file
                    // defined by the kernel linker script in kernel.ld
 
-static unsigned char ref_cnt[1048576];
+static unsigned char ref_cnt[1000000];
 
 struct run {
   struct run *next;
@@ -114,13 +114,13 @@ kalloc(void)
 
 void increaseRefCnt(uint addr) {
 	acquire(&kmem.lock);
-	ref_cnt[V2P((char*)addr)/PGSIZE]++;
+	ref_cnt[addr/PGSIZE]++;
 	release(&kmem.lock);
 }
 
 void decreaseRefCnt(uint addr) {
 	acquire(&kmem.lock);
-	ref_cnt[V2P((char*)addr)/PGSIZE]--;
+	ref_cnt[addr/PGSIZE]--;
 	release(&kmem.lock);
 }
 
@@ -128,7 +128,7 @@ uint getRefCnt(uint addr) {
 	
 	int ret_val;
 	acquire(&kmem.lock);
-	ret_val = (uint)ref_cnt[V2P((char*)addr)/PGSIZE];
+	ret_val = (uint)ref_cnt[addr/PGSIZE];
 	release(&kmem.lock);
 	return ret_val;
 }

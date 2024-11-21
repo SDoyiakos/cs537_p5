@@ -340,6 +340,7 @@ copyuvm(pde_t *pgdir, uint sz)
   pde_t *d;
   pte_t *pte;
   uint pa, i, flags;
+  char* mem;
 
   if((d = setupkvm()) == 0)
     return 0;
@@ -349,30 +350,41 @@ copyuvm(pde_t *pgdir, uint sz)
     if(!(*pte & PTE_P))
       panic("copyuvm: page not present"); // Ensure page present
 
-     
-    pa = PTE_ADDR(*pte); // Retrieve physical addr
-    flags = PTE_FLAGS(*pte); // Retrieve flags 
-
-	/** Set Cow bits  for child **/
-	if((flags & PTE_W) == PTE_W) {
-		flags|=0x600; // Set COW and R/W
-		(*pte)|=0x600;
-	}
-	else {
-		flags|=0x400; // Set COW
-		(*pte)|=0x400;
-	}
-	flags&= ~PTE_W; // Set to read only
-
-	/** Set Cow bits for parent **/
-	*pte&= ~PTE_W;
-	
-	
-    if(mappages(d, (void*)i, PGSIZE, pa, flags) < 0) { // Map VA addr to new mem
-      goto bad;
+    if(findMapping(*pte)) {
+      	pa = PTE_ADDR(*pte);
+	    flags = PTE_FLAGS(*pte);
+	    if((mem = kalloc()) == 0)
+	      goto bad;
+	    memmove(mem, (char*)P2V(pa), PGSIZE);
+	    if(mappages(d, (void*)i, PGSIZE, V2P(mem), flags) < 0) {
+	      kfree(mem);
+	      goto bad;
+	    }
     }
-    increaseRefCnt(pa);
-    lcr3(V2P(pgdir));
+    else {
+	    pa = PTE_ADDR(*pte); // Retrieve physical addr
+	    flags = PTE_FLAGS(*pte); // Retrieve flags 
+
+		/** Set Cow bits  for child **/
+		if((flags & PTE_W) == PTE_W) {
+			flags|=0x600; // Set COW and R/W
+			(*pte)|=0x600;
+		}
+		else {
+			flags|=0x200; // Set COW
+			(*pte)|=0x200;
+		}
+		flags&= ~PTE_W; // Set to read only
+
+		/** Set Cow bits for parent **/
+		*pte&= ~PTE_W;
+		
+	    if(mappages(d, (void*)i, PGSIZE, pa, flags) < 0) { // Map VA addr to new mem
+	      goto bad;
+	    }
+	    increaseRefCnt(pa);
+	    lcr3(V2P(pgdir));
+	  }
   }
 
   
