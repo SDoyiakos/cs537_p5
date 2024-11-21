@@ -102,6 +102,7 @@ struct segdesc {
 #define PTE_ADDR(pte)   ((uint)(pte) & ~0xFFF)
 #define PTE_FLAGS(pte)  ((uint)(pte) &  0xFFF)
 
+
 #define GETCOWF(pte)	(((uint)(pte) & PTE_COWF) >> 9)
 #define GETCOWRW(pte) 	(((uint)(pte) & PTE_COWRW) >> 10)
 
