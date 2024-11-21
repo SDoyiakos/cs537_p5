@@ -118,6 +118,7 @@ int test_fork(void) {
 		printf(1, "Ret Val in parent %d\n", *(int*)ret_val);
 	}
 	else if(fork_ret == 0) {
+		*(int*)ret_val = 672;
 		printf(1, "Ret Val in child %d\n", *(int*)ret_val);
 	}
 	else {
@@ -140,7 +141,7 @@ int main(void) {
 	//testWmapAndUnmap();
 	//test_va2pa();
 	//test_getwmapinfo();
-	//test_fork();
-	test_cow();
+	test_fork();
+	//test_cow();
 	exit();
 }
