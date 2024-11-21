@@ -383,8 +383,9 @@ copyuvm(pde_t *pgdir, uint sz)
 	      goto bad;
 	    }
 	    increaseRefCnt(pa);
-	    lcr3(V2P(pgdir));
+	    
 	  }
+	  lcr3(V2P(pgdir));
   }
 
   

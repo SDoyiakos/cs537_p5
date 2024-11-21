@@ -306,7 +306,7 @@ exit(void)
   		for(uint k = m->addr;k<m->addr+m->length;k+=PGSIZE) { // Get each mapping
   			pte = walkpgdir(curproc->pgdir, (void*)k, 0); // Retrieve PTE of addr in mapping
   			if(pte != 0) {
-  				memset(pte,0, PGSIZE); // Set each mapping to zero
+  				memset((void*)PTE_ADDR(pte),0, PGSIZE); // Set each mapping to zero
   			}
   		}
   	}
