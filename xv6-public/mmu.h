@@ -95,14 +95,15 @@ struct segdesc {
 #define PTE_W           0x002   // Writeable
 #define PTE_U           0x004   // User
 #define PTE_PS          0x080   // Page Size
-#define PTE_COW			0x200
-#define PTE_COWRW		0x400
+#define PTE_COWF		0x200   // COW flag
+#define PTE_COWRW		0x400	// COW RW
 
 // Address in page table or page directory entry
 #define PTE_ADDR(pte)   ((uint)(pte) & ~0xFFF)
 #define PTE_FLAGS(pte)  ((uint)(pte) &  0xFFF)
 
-#define GETCOWF(pte)		(((uint)(pte) & PTE_COW) >> 9)
+
+#define GETCOWF(pte)	(((uint)(pte) & PTE_COWF) >> 9)
 #define GETCOWRW(pte) 	(((uint)(pte) & PTE_COWRW) >> 10)
 
 #ifndef __ASSEMBLER__
