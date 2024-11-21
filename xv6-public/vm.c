@@ -14,6 +14,8 @@
 extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
 
+//extern unsigned char ref_cnt[];
+
 // Set up CPU's kernel segment descriptors.
 // Run once on entry on each CPU.
 void
@@ -286,8 +288,10 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
       a = PGADDR(PDX(a) + 1, 0, 0) - PGSIZE;
     else if((*pte & PTE_P) != 0){
       pa = PTE_ADDR(*pte);
-      if(pa == 0)
+      if(pa == 0) {
+      	cprintf("KFREE addr is 0x%x\n", a);
         panic("kfree");
+      }
       char *v = P2V(pa);
       kfree(v);
       *pte = 0;
@@ -336,28 +340,46 @@ copyuvm(pde_t *pgdir, uint sz)
   pde_t *d;
   pte_t *pte;
   uint pa, i, flags;
-  char *mem;
 
   if((d = setupkvm()) == 0)
     return 0;
   for(i = 0; i < sz; i += PGSIZE){
-    if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
+    if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0) // Ensure page exists
       panic("copyuvm: pte should exist");
     if(!(*pte & PTE_P))
-      panic("copyuvm: page not present");
-    pa = PTE_ADDR(*pte);
-    flags = PTE_FLAGS(*pte);
-    if((mem = kalloc()) == 0)
-      goto bad;
-    memmove(mem, (char*)P2V(pa), PGSIZE);
-    if(mappages(d, (void*)i, PGSIZE, V2P(mem), flags) < 0) {
-      kfree(mem);
+      panic("copyuvm: page not present"); // Ensure page present
+
+     
+    pa = PTE_ADDR(*pte); // Retrieve physical addr
+    flags = PTE_FLAGS(*pte); // Retrieve flags 
+
+	/** Set Cow bits  for child **/
+	if((flags & PTE_W) == PTE_W) {
+		flags|=0x600; // Set COW and R/W
+		(*pte)|=0x600;
+	}
+	else {
+		flags|=0x400; // Set COW
+		(*pte)|=0x400;
+	}
+	flags&= ~PTE_W; // Set to read only
+
+	/** Set Cow bits for parent **/
+	*pte&= ~PTE_W;
+	
+	
+    if(mappages(d, (void*)i, PGSIZE, pa, flags) < 0) { // Map VA addr to new mem
       goto bad;
     }
+    increaseRefCnt(pa);
+    lcr3(V2P(pgdir));
   }
+
+  
   return d;
 
 bad:
+  cprintf("Hit Bad\n");
   freevm(d);
   return 0;
 }

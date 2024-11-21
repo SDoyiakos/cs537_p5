@@ -1,3 +1,4 @@
+
 #include "types.h"
 #include "defs.h"
 #include "param.h"
@@ -83,10 +84,50 @@ trap(struct trapframe *tf)
 
   case T_PGFLT:
   	
-  	struct ProcMapping* curr_mapping; // Pointer to current mapping
   	uint flt_addr = rcr2(); // The page fault addr
 	char* mem; // Used to hold kalloc addr
-	
+	pte_t* pte = walkpgdir(myproc()->pgdir, (void*)flt_addr, 0);
+	uint pa;
+
+	// COW PGFLT
+	if(GETCOWF(*pte) == 1) {
+		if(GETCOWRW(*pte) == 0) {
+			cprintf("COW ");
+			cprintf("Segmentation Fault\n");
+			exit();
+		}
+
+		pa = PTE_ADDR(*pte);
+
+		// If last reference just set write bit
+		if(getRefCnt(pa) == 1) { 
+			*pte|=PTE_W;
+			lcr3(V2P(myproc()->pgdir)); // Flush TLB
+			break;
+		}
+
+		// There are other refs
+		else if(getRefCnt(pa) > 1) {
+			mem = kalloc();
+			if(mem == 0) {
+				cprintf("Error with COW kalloc\n");
+				exit();
+			}
+			
+			memmove(mem, (char*)pa, PGSIZE);
+			decreaseRefCnt(pa);
+			*pte = PTE_U | PTE_W | PTE_P | V2P(mem);
+			lcr3(V2P(myproc()->pgdir)); // Flush TLB
+			break;
+		}	
+		else {
+			cprintf("Error, ref count < 1\n");
+			exit();
+		}
+	} 	
+
+	/** Mapping pgflt **/
+	struct ProcMapping* curr_mapping; // Pointer to current mapping
 	curr_mapping = findMapping(flt_addr); // Get current mapping
 	if(curr_mapping != (struct ProcMapping*)0) { // If a mapping is found
 
@@ -126,7 +167,8 @@ trap(struct trapframe *tf)
 			}
 		}
 	else {
-		
+		cprintf("FLT ADDR is 0x%x\n", flt_addr);
+		cprintf("PTE is 0x%x\n", *pte);
 		cprintf("Segmentation Fault\n");
 		exit();
 	}
